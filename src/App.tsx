@@ -1,46 +1,60 @@
-import { DropResult, DragDropContext } from '@hello-pangea/dnd';
+import { DropResult, DragDropContext, Droppable } from '@hello-pangea/dnd';
 import { useRecoilState } from 'recoil';
 import styled from 'styled-components';
-import { toDoState } from './atoms';
+import { BoardState, toDoState } from './atoms';
 import Board from './Components/Board';
 
-const Wrapper = styled.div`
-  padding: 10px;
-`;
+const Wrapper = styled.div``;
 
 const Boards = styled.div`
   display: grid;
-  grid-template-columns: repeat(4, minmax(auto, 353px));
-  grid-auto-columns: minmax(353px, auto);
-  gap: 18px;
-  padding: 10px;
+  grid-template-columns: repeat(10, 353px);
+  padding: 30px 15px;
+  div {
+    margin-right: 15px;
+  }
+`;
+
+const AddBoard = styled.button`
+  width: 353px;
+  border: 2px dotted ${(props) => props.theme.borderColor};
+  border-radius: 5px;
+  font-size: 20px;
+  font-weight: 200;
+  color: ${(props) => props.theme.textColor};
+  &:hover {
+  }
 `;
 
 function App() {
   //유저가 드래그를 끝낸 시점에 불려지는 함수
   const onDragEnd = (info: DropResult) => {
-    const { destination, source } = info;
+    console.log(info);
+    const { destination, source, type } = info;
     if (!destination) return;
-    //동일한 보드 안에서 움직였을 경우
-    if (destination?.droppableId === source.droppableId) {
+
+    if (source.droppableId === 'boards') {
+      setBoards((prev) => {
+        const boardsCopy = [...prev];
+        const targetBoard = boardsCopy.splice(source.index, 1)[0];
+        boardsCopy.splice(destination?.index, 0, targetBoard);
+        return boardsCopy;
+      });
+    } else if (destination?.droppableId === source.droppableId) {
       setToDos((allBoards) => {
         const boardCopy = [...allBoards[source.droppableId]];
-        const taskObj = boardCopy[source.index];
-        boardCopy.splice(source.index, 1);
+        const taskObj = boardCopy.splice(source.index, 1)[0];
         boardCopy.splice(destination?.index, 0, taskObj);
         return {
           ...allBoards,
           [source.droppableId]: boardCopy,
         };
       });
-    }
-    //다른 보드로 이동시킬 경우
-    if (destination?.droppableId !== source.droppableId) {
+    } else if (destination?.droppableId !== source.droppableId) {
       setToDos((allBoards) => {
         const sourceBoard = [...allBoards[source.droppableId]];
-        const taskObj = sourceBoard[source.index];
+        const taskObj = sourceBoard.splice(source.index, 1)[0];
         const destinationBoard = [...allBoards[destination.droppableId]];
-        sourceBoard.splice(source.index, 1);
         destinationBoard.splice(destination?.index, 0, taskObj);
         return {
           ...allBoards,
@@ -52,15 +66,41 @@ function App() {
   };
 
   const [toDos, setToDos] = useRecoilState(toDoState);
+  const [boards, setBoards] = useRecoilState(BoardState);
+
+  const handleAddColumn = () => {
+    const newColumn = prompt('추가할 보드의 이름은 무엇인가요?');
+    if (newColumn) {
+      if (boards.includes(newColumn)) {
+        alert('동일한 보드가 이미 추가되어 있습니다.');
+        return;
+      }
+      setBoards([...boards, newColumn]);
+      setToDos((prev) => {
+        return { ...prev, [newColumn]: [] };
+      });
+    }
+  };
   return (
     <>
       <DragDropContext onDragEnd={onDragEnd}>
         <Wrapper>
-          <Boards>
-            {Object.keys(toDos).map((boardId) => (
-              <Board key={boardId} toDos={toDos[boardId]} boardId={boardId} />
-            ))}
-          </Boards>
+          <Droppable droppableId='boards' direction='horizontal' type='board'>
+            {(provided) => (
+              <Boards ref={provided.innerRef} {...provided.droppableProps}>
+                {boards.map((boardId: string, index: number) => (
+                  <Board
+                    key={index}
+                    index={index}
+                    boardId={boardId}
+                    toDos={toDos[boardId]}
+                  />
+                ))}
+                <AddBoard onClick={handleAddColumn}>+ Add columns</AddBoard>
+                {provided.placeholder}
+              </Boards>
+            )}
+          </Droppable>
         </Wrapper>
       </DragDropContext>
     </>
