@@ -105,7 +105,7 @@ const Form = styled.form`
 const Area = styled.ul<IArea>`
   padding: 10px;
   /* padding-top: 30px; */
-  background-color: ${(props) => props.theme.borardColor};
+  background-color: ${(props) => props.theme.boardColor};
   border: 1px solid ${(props) => props.theme.borderColor};
   border-radius: 5px;
   height: 100vh;
