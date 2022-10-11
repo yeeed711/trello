@@ -28,8 +28,9 @@ export default React.memo(Card);
 
 const CardStyle = styled.li<{ isDragging: boolean }>`
   background-color: ${(props) => props.theme.cardColor};
-  border-radius: 8px;
+  border-radius: 5px;
   padding: 10px;
   font-size: 14px;
   line-height: 21px;
+  border: 1.5px solid ${(props) => props.theme.borderColor};
 `;
