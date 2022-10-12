@@ -1,16 +1,27 @@
 import { Droppable } from '@hello-pangea/dnd';
-import React from 'react';
 import { useRecoilValue } from 'recoil';
 import styled from 'styled-components';
 import { isDeleteState } from '../atoms';
 
 const DeleteBox = () => {
   const isDelete = useRecoilValue(isDeleteState);
+
   return (
     <Droppable droppableId='deleteBox'>
-      {(provided) => (
-        <Wrapper ref={provided.innerRef} {...provided.droppableProps}>
-          {isDelete && <div> 삭제할 공간입니다</div>}
+      {(provided, snapshot) => (
+        <Wrapper
+          ref={provided.innerRef}
+          {...provided.droppableProps}
+          isDraggingOver={snapshot.isDraggingOver}>
+          <div>
+            {isDelete && (
+              <span
+                className='material-icons-round'
+                style={{ fontSize: 'inherit' }}>
+                delete_forever
+              </span>
+            )}
+          </div>
         </Wrapper>
       )}
     </Droppable>
@@ -19,8 +30,15 @@ const DeleteBox = () => {
 
 export default DeleteBox;
 
-const Wrapper = styled.div`
+const Wrapper = styled.div<{ isDraggingOver: boolean }>`
   div {
-    font-size: 100px;
+    height: 100px;
+    text-align: center;
+    font-size: 80px;
+    background-color: ${(props) =>
+      props.isDraggingOver ? '#171a22' : 'transparent'};
+    span {
+      line-height: 100px;
+    }
   }
 `;

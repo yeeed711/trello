@@ -12,11 +12,6 @@ interface IBoardProps {
   index: number;
 }
 
-interface IArea {
-  isDraggingOver: boolean;
-  draggingFromThisWith: boolean;
-}
-
 interface IForm {
   toDo: string;
 }
@@ -43,11 +38,7 @@ const Board = ({ toDos, boardId, index }: IBoardProps) => {
           {...provided.dragHandleProps}>
           <Droppable droppableId={boardId}>
             {(provided, snapshot) => (
-              <Area
-                isDraggingOver={snapshot.isDraggingOver}
-                draggingFromThisWith={Boolean(snapshot.draggingFromThisWith)}
-                ref={provided.innerRef}
-                {...provided.droppableProps}>
+              <Area ref={provided.innerRef} {...provided.droppableProps}>
                 <Title>
                   <span>{toDos?.length ? toDos.length : 0}</span>
                   {boardId}
@@ -102,13 +93,12 @@ const Form = styled.form`
   }
 `;
 
-const Area = styled.ul<IArea>`
+const Area = styled.ul`
   padding: 10px;
-  /* padding-top: 30px; */
   background-color: ${(props) => props.theme.boardColor};
   border: 1px solid ${(props) => props.theme.borderColor};
   border-radius: 5px;
-  height: 100vh;
+  min-height: 500px;
   li + li {
     margin-top: 8px;
   }
