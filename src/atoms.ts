@@ -1,7 +1,7 @@
 import { atom, selector } from 'recoil';
 import { recoilPersist } from 'recoil-persist';
 const { persistAtom } = recoilPersist();
-interface IToDoState {
+export interface IToDoState {
   [key: string]: IToDo[];
 }
 
