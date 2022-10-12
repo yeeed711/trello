@@ -1,8 +1,14 @@
-import { DropResult, DragDropContext, Droppable } from '@hello-pangea/dnd';
-import { useRecoilState } from 'recoil';
+import {
+  DropResult,
+  DragDropContext,
+  Droppable,
+  DragStart,
+} from '@hello-pangea/dnd';
+import { useRecoilState, useSetRecoilState } from 'recoil';
 import styled from 'styled-components';
-import { BoardState, toDoState } from './atoms';
+import { BoardState, isDeleteState, toDoState } from './atoms';
 import Board from './Components/Board';
+import DeleteBox from './Components/DeleteBox';
 
 const Wrapper = styled.div``;
 
@@ -29,8 +35,10 @@ const AddBoard = styled.button`
 function App() {
   //유저가 드래그를 끝낸 시점에 불려지는 함수
   const onDragEnd = (info: DropResult) => {
+    // setIsDelete(false);
+
     console.log(info);
-    const { destination, source, type } = info;
+    const { destination, source } = info;
     if (!destination) return;
 
     if (source.droppableId === 'boards') {
@@ -39,6 +47,12 @@ function App() {
         const targetBoard = boardsCopy.splice(source.index, 1)[0];
         boardsCopy.splice(destination?.index, 0, targetBoard);
         return boardsCopy;
+      });
+    } else if (destination.droppableId === 'deleteBox') {
+      setToDos((allBoards) => {
+        const boardCopy = [...allBoards[source.droppableId]];
+        boardCopy.splice(source.index, 1);
+        return { ...allBoards, [source.droppableId]: boardCopy };
       });
     } else if (destination?.droppableId === source.droppableId) {
       setToDos((allBoards) => {
@@ -81,13 +95,24 @@ function App() {
       });
     }
   };
+
+  const setIsDelete = useSetRecoilState(isDeleteState);
+  const onBeforeDragStart = (info: DragStart) => {
+    console.log(info.type, '시작');
+    if (info.type === 'DEFAULT') {
+      setIsDelete(true);
+    }
+  };
   return (
     <>
-      <DragDropContext onDragEnd={onDragEnd}>
+      <DragDropContext
+        onBeforeDragStart={onBeforeDragStart}
+        onDragEnd={onDragEnd}>
         <Wrapper>
           <Droppable droppableId='boards' direction='horizontal' type='board'>
             {(provided) => (
               <Boards ref={provided.innerRef} {...provided.droppableProps}>
+                <DeleteBox />
                 {boards.map((boardId: string, index: number) => (
                   <Board
                     key={index}

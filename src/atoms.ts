@@ -25,3 +25,8 @@ export const BoardState = atom<string[]>({
   default: ['TODO', 'DOING', 'DONE'],
   effects_UNSTABLE: [persistAtom],
 });
+
+export const isDeleteState = atom<boolean>({
+  key: 'delete',
+  default: false,
+});
